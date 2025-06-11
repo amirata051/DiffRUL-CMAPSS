@@ -1,5 +1,8 @@
 output/
+data/
 *.npy
 __pycache__
 *.pth
 *.png
+*.ipynb
+

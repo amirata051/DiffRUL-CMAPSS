@@ -33,7 +33,7 @@ config = {
     "TripletLoss_weight": 10,  # Weight for triplet loss (lambda_4=10)
     "TripletLoss_margin": 0.4,  # Margin for triplet loss (alpha=0.4)
     "TripletLoss_p": 2,  # Norm for triplet loss
-    "data_dir": "/workspace/BearingGroup/nasa-cmaps/CMaps",  # Directory of C-MAPSS dataset
+    "data_dir": "/workspace/TurboFan/data/CMAPSS",  # Directory of C-MAPSS dataset
     # Add learning rate scheduler
     "lr_scheduler": {"type": "StepLR", "step_size": 1, "gamma": 0.98}  # Decay factor 0.98
 }
