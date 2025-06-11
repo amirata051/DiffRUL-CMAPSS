@@ -1,4 +1,3 @@
-# dataset.py
 import numpy as np
 import os
 from torch.utils.data import Dataset, DataLoader
@@ -6,24 +5,25 @@ import torch
 import pandas as pd
 
 class CMAPSDataset(Dataset):
-    def __init__(self, data_dir, mode="train", window_size=30, return_pairs=False):
-        # Initialize dataset with C-MAPSS data directory, mode, window size, and pair flag
+    def __init__(self, data_dir, mode="train", window_size=30, return_pairs=False, subset="FD001"):
+        # Initialize dataset with C-MAPSS data directory, mode, window size, pair flag, and subset
         self.data_dir = data_dir
         self.mode = mode  # "train" or "test" mode
         self.window_size = window_size  # Size of the sliding window
         self.return_pairs = return_pairs  # Whether to return positive/negative pairs
+        self.subset = subset  # C-MAPSS subset (FD001, FD002, FD003, FD004)
         self.data = []  # List to store processed data (windows)
         self.ruls = []  # List to store Remaining Useful Life (RUL) values
         self.ids = []  # List to store sample IDs
         self.full_runs = {}  # Dictionary to store full runs for each unit
         self.full_ruls = {}  # Dictionary to store full RULs for each unit
 
-        # Determine file paths based on mode
+        # Determine file paths based on mode and subset
         if self.mode == "train":
-            data_file = os.path.join(data_dir, "train_FD001.txt")
+            data_file = os.path.join(data_dir, f"train_{subset}.txt")
         else:
-            data_file = os.path.join(data_dir, "test_FD001.txt")
-            rul_file = os.path.join(data_dir, "RUL_FD001.txt")
+            data_file = os.path.join(data_dir, f"test_{subset}.txt")
+            rul_file = os.path.join(data_dir, f"RUL_{subset}.txt")
 
         # Read the data file into a DataFrame
         df = pd.read_csv(data_file, delim_whitespace=True, header=None)
@@ -77,7 +77,7 @@ class CMAPSDataset(Dataset):
         self.ruls = np.array(self.ruls)
 
         # Save preprocessed data
-        preprocessed_dir = os.path.join('output', 'preprocessed')
+        preprocessed_dir = os.path.join('output', subset, 'preprocessed')
         os.makedirs(preprocessed_dir, exist_ok=True)
         np.save(os.path.join(preprocessed_dir, f'preprocessed_data_{self.mode}.npy'), self.data)
         np.save(os.path.join(preprocessed_dir, f'preprocessed_ruls_{self.mode}.npy'), self.ruls)
@@ -190,7 +190,6 @@ class AugmentedDataset(Dataset):
         x = self.data[idx]
         y = self.ruls[idx]
         return x, y
-
 
 if __name__ == "__main__":
     from config import config

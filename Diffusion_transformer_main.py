@@ -1,3 +1,4 @@
+# Diffusion_transformer_main.py
 import os
 import torch
 import logging
@@ -30,19 +31,19 @@ def model_train(config, train_loader):
     transformer_layers=2,
     nhead=4
 )"""
-    model_diff = TransformerDWaviffe(config)
+    model_diff = TransformerDiffWave(config)
 
     model_diff.to(device)
     diffusion = DDPMDiffusion(config['noise_steps'], config['beta_start'], config['beta_end'], config['schedule_name'], device)
 
     from Diffusion_model.Diff_network import EMA
     ema = EMA(beta=0.995)
-    ema_model = copy.deepcopy(model).eval().requires_grad_(False)
+    ema_model = copy.deepcopy(model_diff).eval().requires_grad_(False)
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=config['lr'])
+    optimizer = torch.optim.Adam(model_diff.parameters(), lr=config['lr'])
     criterion = torch.nn.MSELoss()
 
-    model.train()
+    model_diff.train()
     best_epoch = 0
     best_loss = float('inf')
     epoch_loss = []
@@ -64,14 +65,14 @@ def model_train(config, train_loader):
             time = diffusion.sample_time_steps(x.shape[0]).to(device)
             noisy_x, noise = diffusion.noise_images(x=x, time=time)
 
-            predicted_noise = model(noisy_x, time, conditioner)
+            predicted_noise = model_diff(noisy_x, time, conditioner)
             loss = criterion(noise, predicted_noise)
 
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
-            ema.step_ema(ema_model=ema_model, model=model)
+            ema.step_ema(ema_model=ema_model, model=model_diff)
             batch_loss.append(loss.item())
 
         epoch_avg_loss = np.mean(batch_loss)
@@ -82,7 +83,7 @@ def model_train(config, train_loader):
         if (epoch + 1) % 10 == 0:
             save_path = os.path.join(config['output_dir'], f'best_diff_model_{epoch + 1}.pt')
             ema_save_path = os.path.join(config['output_dir'], f'ema_best_diff_model_{epoch + 1}.pt')
-            torch.save({'state_dict': model.state_dict()}, save_path)
+            torch.save({'state_dict': model_diff.state_dict()}, save_path)
             torch.save({'state_dict': ema_model.state_dict()}, ema_save_path)
 
     return epoch_loss
