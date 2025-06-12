@@ -1,4 +1,3 @@
-
 import random
 import pickle
 import numpy as np
@@ -9,10 +8,11 @@ import os
 def set_seed(seed=2023):
     random.seed(seed)
     np.random.seed(seed)
-    torch.manual_seed(seed)       # 为CPU设置随机种子
-    torch.cuda.manual_seed(seed)  # 为当前GPU设置随机种子
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
 
 def save_to_pickle(data_path, data):
+    os.makedirs(os.path.dirname(data_path), exist_ok=True)
     with open(data_path, 'wb') as file:
         pickle.dump(data, file)
 
@@ -33,10 +33,6 @@ def create_dirs(dirs):
             os.makedirs(dir_)
 
 def load_model(ckpt):
-    '''
-    ckpt: Path of the checkpoint
-    return: Checkpoint dict
-    '''
     if os.path.isfile(ckpt):
         checkpoint = torch.load(ckpt)
         print("Successfully loaded checkpoint '%s'" % ckpt)

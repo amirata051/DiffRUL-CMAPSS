@@ -1,4 +1,3 @@
-# Diffusuin_transformer_main.py
 import os
 import torch
 import logging
@@ -6,14 +5,12 @@ import argparse
 import copy
 import numpy as np
 from tqdm import tqdm
-
 from utils import utils
 from Diffusion_model.Diff_transformer_network import TransformerDiffWave
 from Diffusion_model.ddpm import Diffusion as DDPMDiffusion
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"device is set to: {device}")
-
 
 def model_train(config, train_loader):
     model_vae = torch.load(config['vae_model_path'])
@@ -22,18 +19,7 @@ def model_train(config, train_loader):
     for param in model_vae.parameters():
         param.requires_grad = False
 
-    # model = HybridDiffWave(config)
-    """model = HybridDiffWave(
-    in_channels=1,      # input tensor has 1 channel
-    cond_channels=1,    # conditioning input has 1 channel (e.g., latent z from VAE)
-    residual_channels=64,
-    residual_layers=6,
-    transformer_layers=2,
-    nhead=4
-)"""
     model_diff = TransformerDiffWave(config)
-
-
     model_diff.to(device)
     diffusion = DDPMDiffusion(config['noise_steps'], config['beta_start'], config['beta_end'], config['schedule_name'], device)
 
@@ -89,21 +75,11 @@ def model_train(config, train_loader):
 
     return epoch_loss
 
-
 def model_test(config, train_loader, best_diff_model_path, output_path):
     model_vae = torch.load(config['vae_model_path'])
     model_vae.to(device)
     model_vae.eval()
 
-    # model_diff = HybridDiffWave(config)
-    """model = HybridDiffWave(
-    in_channels=1,      # input tensor has 1 channel
-    cond_channels=1,    # conditioning input has 1 channel (e.g., latent z from VAE)
-    residual_channels=64,
-    residual_layers=6,
-    transformer_layers=2,
-    nhead=4
-    )"""
     model_diff = TransformerDiffWave(config)
     checkpoint = utils.load_model(best_diff_model_path)
     model_diff.load_state_dict(checkpoint['state_dict'])
